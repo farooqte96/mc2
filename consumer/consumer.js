@@ -2,7 +2,7 @@ var io=require('socket.io-client');
 var ip = require('ip');
 // import io from 'socket.io-client';
 var socket;
-socket=io.connect("http://195.148.127.245:3000");
+socket=io.connect("http://195.148.127.246:3000");
 var system_utilization1=null;
 var myrole=null;
 
