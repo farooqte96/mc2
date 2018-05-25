@@ -1,6 +1,6 @@
 #cd master
 #npm init package.json
 cd consumer
-npm init package.json
+npm install package.json
 cd ..
 
