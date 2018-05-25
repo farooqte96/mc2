@@ -1,0 +1,21 @@
+extends layout
+block content
+  h1 #{title}
+  form(method='POST', action='/cloudlets/add')
+    #form-group
+      label Name:
+      input.form-control(name='name', type='text')
+    #form-group
+      label IP:
+      input.form-control(name='ip', type='text')
+    #form-group
+      label Network:
+      input.form-control(name='network', type='text')
+    #form-group
+      label SSH-Key:
+      textarea.form-control(name='ssh_key')
+    #form-group
+      label Role:
+      input.form-control(name='role', type='text')
+      br
+    input.btn.btn-primary(type='submit', value='Submit')

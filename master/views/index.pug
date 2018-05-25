@@ -1,0 +1,58 @@
+extends layout
+block content
+
+
+  h2 #{title}
+  br
+  ul.list-group
+    each cloudlet, i in cloudlets
+      li.list-group-item
+        a(href="/cloudlet/"+cloudlet._id)=cloudlet.name+'@'+cloudlet.ip +" "+ "["+cloudlet.role+"]"
+  br
+  h2 Application Profiles
+  br
+  ul.list-group
+    each profile, i in profiles
+      li.list-group-item
+        a(href="/profile/"+profile._id)=profile.name
+
+
+  br
+
+  h2 Events:
+  p#attach_req
+  p#attach_rep
+  p#link
+
+
+  button#cpu_stats.btn.btn-success(type='button') Get Live statistics!
+  ul#list
+  script(src='/socket.io/socket.io.js')
+  script(src='/bower_components/jquery/jquery.min.js')
+  script.
+    var socket = io({transports: ['websocket'], upgrade: false});
+    document.getElementById('cpu_stats').addEventListener('click', (e) => {
+      socket.on('sendtobrowser', (system_utilization)=> {
+        console.log(system_utilization);
+        document.getElementById('cpu').innerHTML = 'CPU Utilization: '+(system_utilization.cpu)+ '%';
+        document.getElementById('gpu').innerHTML = 'GPU Utilization: '+(system_utilization.gpu).toFixed(2) + '%';
+        document.getElementById('ram').innerHTML = 'Memory Usage: '+(system_utilization.ram).toFixed(2) + '%';
+      });
+    });
+
+     socket.on('user_attach_req_browser', (user)=> {
+      document.getElementById('attach_req').innerHTML="ATTACH_REQ: "+ user.username + " wants to start " +user.app_name +" on node "+user.ip;
+      <!-- console.log("ATTACH_REQ: "+ user.username + " wants to connect with " + user.ip ); -->
+    });
+
+     socket.on('response', (user)=> {
+
+      <!--console.log("ATTACH_REP: Service of " + user.app_name + " given to " + user.username);-->
+      document.getElementById('attach_rep').innerHTML="ATTACH_REP: "+user.username+ " is  "+user.ack
+
+
+    });
+
+     socket.on('user_left', (user) => {
+       console.log("User " + user.username+ " has left");
+     });

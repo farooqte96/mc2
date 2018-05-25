@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= cloudlet.name
+  p IP Address:  #{cloudlet.ip}
+  p Network: #{cloudlet.network}
+  p Role: #{cloudlet.role}
+  p SSH-Key: #{cloudlet.ssh_key}
+  hr
+  div.btn-group
+   a.btn.btn-success(href='/cloudlet/edit/'+cloudlet._id) Edit
+   a.btn.btn-danger.delete-cloudlet(href='#', data-id=cloudlet._id) Delete
+   br
+  .embed-responsive.embed-responsive-16by9
+    iframe.embed-responsive-item(src='http://'+cloudlet.ip+':8080', allowfullscreen='')
+   

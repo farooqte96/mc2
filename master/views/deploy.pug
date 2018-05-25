@@ -1,0 +1,41 @@
+extends layout
+block content
+  p #{message}
+
+  form(method='POST', action='/deploy/')
+    #form-group
+      label Target Node:
+
+      select.form-control(name='name').selectpicker.show-tick
+         each cloudlet, i in cloudlets
+           li.list-group-item
+             option=cloudlet.name+"@"+cloudlet.ip
+
+    #form-group
+      label App Name:
+      input.form-control(name='application', type='text')
+    #form-group
+        label App Type:
+        select.form-control(name='type').selectpicker.show-tick
+
+          option(selected='') Choose...
+          option(value='stateful') Stateful
+          option(value='stateless') Sate-less
+
+
+
+
+    #form-group
+      label Image:
+      input.form-control(name='image',type='text')
+    #form-group
+      label Arguments:
+      input.form-control(name='arguments',type='text')
+
+      br
+    input.btn.btn-primary(type='submit', value='Deploy')
+
+    script(src='/socket.io/socket.io.js')
+    script(src='/bower_components/jquery/jquery.min.js')
+    <!-- script.
+      var socket = io({transports: ['websocket'], upgrade: false}); -->

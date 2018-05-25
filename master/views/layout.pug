@@ -1,0 +1,66 @@
+doctype html
+html(lang='en')
+  head
+    title MEC Resource Manager
+    link(rel='stylesheet' href='/bower_components/bootstrap/dist/css/bootstrap.css')
+    link(rel='stylesheet' href='/bower_components/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet' href='/bower_components/bootstrap/dist/css/simple-sidebar.css')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    //- link(rel='stylesheet' href='/css/stylesheet.css')
+  body
+    #wrapper
+
+      #sidebar-wrapper
+        ul.sidebar-nav
+          li.sidebar-brand
+            a(href='#')
+              | MEC Resource Manager
+          li
+            a(href='/') Dashboard
+          li
+            a(href='/cloudlets/add') Register Node
+          li
+            a(href='/profiles/add') Add Profile
+          li
+            a(href='/deploy') Deploy App
+          li
+              a(href='#') Resource Utilization
+          li
+            a(href='/migrate') Service Migration
+          li
+            a(href='#') Load Balancer
+          li
+
+
+      #page-content-wrapper
+        .container-fluid
+          h1 Container based MEC Platform
+          p Introduction about MEC
+
+          //- p
+            | This template has a responsive menu toggling system. The menu will appear collapsed on smaller screens, and will appear non-collapsed on larger screens. When toggled using the button below, the menu will appear/disappear. On small screens, the page content will be pushed off canvas.
+          //- p
+            | Make sure to keep all page content within the
+            code #page-content-wrapper
+            | .
+          a#menu-toggle.btn.btn-info(href='#menu-toggle') Toggle Menu
+
+        .container
+            block content
+            br
+            hr
+            footer
+              p CopyRight &copy, 2018
+
+
+
+        script(src='/bower_components/jquery/jquery.min.js')
+        script(src='/bower_components/bootstrap/dist/js/bootstrap.bundle.min.js')
+        script(src='/js/main.js')
+        script(src='/socket.io/socket.io.js')
+        <!-- script(src='/js/root.js')-->
+        script.
+          $("#menu-toggle").click(function(e) {
+          e.preventDefault();
+          $("#wrapper").toggleClass("toggled");
+          });

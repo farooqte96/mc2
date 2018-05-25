@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1= profile.name
+  p App Image:  #{profile.image}
+  p Required CPU: #{profile.cpu}
+  p Required GPU: #{profile.gpu}
+  p Required RAM: #{profile.ram}
+  hr
+  div.btn-group
+   a.btn.btn-success(href='/profile/edit/'+profile._id) Edit
+   a.btn.btn-danger.delete-profile(href='#', data-id=profile._id) Delete
+   br

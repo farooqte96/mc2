@@ -1,0 +1,37 @@
+extends layout
+block content
+  p #{message}
+  
+  form(method='POST', action='/migrate/')
+    #form-group
+      label Application:
+                    
+      select.form-control(name='application').selectpicker.show-tick
+          each service, i in services
+            li.list-group-item
+              option=service.app
+          
+    #form-group
+      label Source Node:
+                             
+      select.form-control(name='source').selectpicker.show-tick
+          each cloudlet, i in cloudlets
+            li.list-group-item
+              option=cloudlet.name+"@"+cloudlet.ip  
+    
+    #form-group
+      label Destination Node:
+                   
+      select.form-control(name='destination').selectpicker.show-tick
+         each cloudlet, i in cloudlets
+           li.list-group-item
+             option=cloudlet.name+"@"+cloudlet.ip
+            
+    
+      br
+    input.btn.btn-primary(type='submit', value='Migrate')
+    
+    script(src='/socket.io/socket.io.js')
+    script(src='/bower_components/jquery/jquery.min.js')
+  
+      

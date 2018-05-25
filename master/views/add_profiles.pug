@@ -1,0 +1,22 @@
+extends layout
+block content
+  h1 #{title}
+  form(method='POST', action='/profiles/add')
+    #form-group
+      label Profile Name:
+      input.form-control(name='name', type='text')
+    #form-group
+      label App Image:
+      input.form-control(name='image', type='text')
+    #form-group
+      label Required CPU:
+      input.form-control(name='cpu', type='text')
+    #form-group
+      label Required GPU:
+      input.form-control(name='gpu', type='text')
+    #form-group
+      label Required RAM:
+      input.form-control(name='ram', type='text')
+
+      br
+    input.btn.btn-primary(type='submit', value='Submit')

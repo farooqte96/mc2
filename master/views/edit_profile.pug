@@ -1,0 +1,23 @@
+extends layout
+block content
+  h1 #{title}
+  form(method='POST', action='/profiles/edit/'+profile._id)
+    #form-group
+      Profile Name:
+      input.form-control(name='name', type='text', value=profile.name)
+    #form-group
+      App Image:
+      input.form-control(name='image', type='text', value=profile.image)
+    #form-group
+      Required CPU:
+      input.form-control(name='cpu', type='text', value=profile.cpu)
+    #form-group
+      Required GPU:
+      input.form-control(name='gpu', type='text', value=profile.gpu)
+    #form-group
+      Required RAM:
+      input.form-control(name='ram', type='text', value=profile.ram)
+
+
+      br
+    input.btn.btn-primary(type='submit', value='Submit')
