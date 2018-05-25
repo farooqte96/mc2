@@ -5,9 +5,9 @@ var Schema=mongoose.Schema;
 var profile=mongoose.Schema({
   name:{type:String,require:true},
   image:{type:String,require:true},
-  cpu:{type:Double, required:true},
-  gpu:{type:Double, required:true},
-  ram:{type:Double, required:true}
+  cpu:{type:String, required:true},
+  gpu:{type:String, required:true},
+  ram:{type:String, required:true}
 });
 
 module.exports=mongoose.model('profile',profile);
