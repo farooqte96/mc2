@@ -305,9 +305,25 @@ deploySubject
   // console.log(JSON.stringify(resGlobal.dapp));
   end_time1=new Date();
   var time= end_time1.getTime()-start_time1.getTime();
-  var success=resGlobal.dapp.name+" deployed successfully. You can access it ";
+  if (subjectResponse.error){
+    var success=resGlobal.dapp.name+" deployment failed due to error "+JSON.stringify(subjectResponse.error);
+  }
+  else {
+    var success=resGlobal.dapp.name+" deployed successfully. You can access it ";
+  }
+
+  // save service for only consumers:
+  resGlobal.service.save(function(error, savedservice){
+    if (error){
+      console.log(error);
+    }
+    else {
+      console.log('service saved successfully');
+      // response.redirect('/');
+    }
+  });
   // Step 8: send the required response to form to show to the UI
-  return resGlobal.response.render('deploy_post',{stdout:subjectResponse, success:success, dapp:resGlobal.dapp,time:time});
+  return resGlobal.response.render('deploy_post',{stdout:JSON.stringify(subjectResponse), success:success, dapp:resGlobal.dapp,time:time});
 })
 
 //migrateSubject HERE
@@ -325,7 +341,13 @@ migrateSubject
   // console.log(JSON.stringify(migGlobal.mag));
   // var success=mag.application+" migrated successfully.";
   // response.render('migrate_post',{stdout:stdout, success:success, mag:mag});
-  var success=migGlobal.mag.application+" migrated successfully.";
+  if (subjectResponse.error){
+    var success=migGlobal.mag.application+" migration failed due to error "+JSON.stringify(subjectResponse.error);
+  }
+  else {
+    var success=migGlobal.mag.application+" migrated successfully.";
+  }
+
   // Step 8: send the required response to form to show to the UI
   end_time1=new Date();
   var time= end_time1.getTime()-start_time1.getTime();
@@ -376,23 +398,23 @@ app.post('/deploy', function(request, response){
               // show its load info.
               Load.find({"address":dapp.ip}, function(error, loads){
                           if (loads.length ==1 && loads[0].cpu <= 90 && loads[0].gpu <= 90 && loads[0].ram <=90) {
-                          // save service for only consumers:
-                          service.save(function(error, savedservice){
-                            if (error){
-                              console.log(error);
-                            }
-                            else {
-                              console.log('service saved successfully');
-                              // response.redirect('/');
-                            }
-                          });
+                          // // save service for only consumers:
+                          // service.save(function(error, savedservice){
+                          //   if (error){
+                          //     console.log(error);
+                          //   }
+                          //   else {
+                          //     console.log('service saved successfully');
+                          //     // response.redirect('/');
+                          //   }
+                          // });
 
-                          console.log("Current Load: "+loads[0]);
+                          // console.log("Current Load: "+loads[0]);
                           start_time1=new Date();
 
                           dapp.restart=false;
                           io.emit("start.req@"+ dapp.ip, dapp)
-                          return deploySubject.next({request,response,dapp});
+                          return deploySubject.next({request,response,dapp,service});
                           }
                           else {
 
