@@ -2,7 +2,7 @@ var io=require('socket.io-client');
 var ip = require('ip');
 // import io from 'socket.io-client';
 var socket;
-socket=io.connect("http://195.148.127.246:3000");
+socket=io.connect("http://195.148.127.245:3000");
 var system_utilization1=null;
 var myrole=null;
 
@@ -15,7 +15,15 @@ var myrole=null;
 //     }
 //
 // }
-var address=ip.address();
+// var address=ip.address();
+var address,
+    ifaces = require('os').networkInterfaces();
+for (var dev in ifaces) {
+    if(dev !=="docker0" && dev !=="br-e249cfec586b" && dev !=="lo") {
+      ifaces[dev].filter((details) => details.family === 'IPv4' && details.internal === false ? address = details.address: undefined);
+    }
+
+}
 
 console.log(address);
 var exec=require('child_process').exec;
@@ -39,9 +47,17 @@ socket.on("set.role@"+address, (data)=>{
   // var command="./test.sh " +data.consumer_name+" " +'\"'+data.image+'\"' + " " + data.port+" "+data.host_port+" "+ JSON.stringify(data.env) ;
     exec(command,function(err, stdout){
         if(err){
-          throw err;
-          error=" Couldn't start"+data.name+" with image "+data.image+"& parameters "+data.arguments
-          socket.emit('edge.start.res', error);
+          // throw err;
+          // error=" Couldn't start"+data.name+" with image "+data.image+"& parameters "+data.arguments
+          var response={
+
+                          "error":err,
+                          "bflag":data.browser,
+                          "id":address,
+                          "restart":data.restart
+
+          }
+          socket.emit('start.res', response);
         }
 
         // acknowledgement_callback(stdout);
@@ -134,15 +150,26 @@ function consumer(network){
   // var command="./test.sh " +data.consumer_name+" " +'\"'+data.image+'\"' + " " + data.port+" "+data.host_port+" "+ JSON.stringify(data.env) ;
     exec(command,function(err, stdout){
         if(err){
-          throw err;
-          error=" Couldn't migrate "+mag.application
+          // throw err;
+          // error=" Couldn't migrate "+mag.application
+          var response={
+                        "error":err,
+                        "From":address,
+                        "To":mag.destination,
+                        "name": mag.application,
+                        "image":mag.image,
+                        "arguments":mag.arguments,
+                        "bflag":mag.browser
+
+          }
 
         }
 
         // acknowledgement_callback(stdout);
         if(stdout){
           // console.log(stdout);
-          var response={"From":address,
+          var response={
+                        "From":address,
                         "To":mag.destination,
                         "name": mag.application,
                         "image":mag.image,
@@ -192,7 +219,7 @@ function consumer(network){
       var system_utilization={};
 
       system_utilization.cpu=result.cpu;
-      system_utilization.gpu=result.gpu;
+      system_utilization.gpu=0;
       system_utilization.ram=0;
       system_utilization.address=address;
       system_utilization.network=network;
