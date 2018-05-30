@@ -54,10 +54,11 @@ restore(){
   ssh ${destination_host} "
 
       sudo tar -zxf /tmp/${checkpoint_tar} -C /var/lib/docker/containers/${remote_container_id}/checkpoints/;
-      docker start --checkpoint ${checkpoint_name} ${container_name} &
-      docker start ${container_name} &
+      docker start --checkpoint ${checkpoint_name} ${container_name}
       docker checkpoint rm ${container_name} ${checkpoint_name} &
-      rm /tmp/${checkpoint_tar};
+      sudo rm /tmp/${checkpoint_tar};
+
+
 
   "
   # ssh -t ${destination_host} "sudo tar -zxf /tmp/${checkpoint_tar} -C /var/lib/docker/containers/${remote_container_id}/checkpoints/"
@@ -86,7 +87,7 @@ kill_source() {
 
 
 # 1. First we checkpoint the running container
-checkpoint &
+checkpoint
 
 # 2.Create Backup files
 # Get container ID
@@ -99,8 +100,8 @@ sudo tar -zcf /tmp/${checkpoint_tar} -C /var/lib/docker/containers/${container_i
 
 # 3.Call Migrate function
 migrate
+# 4.Restore at destination
+restore &
 
 # also kill the migrated container
-kill_source &
-# 4.Restore at destination
-restore
+kill_source
