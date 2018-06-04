@@ -2,7 +2,7 @@ var io=require('socket.io-client');
 var ip = require('ip');
 // import io from 'socket.io-client';
 var socket;
-socket=io.connect("http://195.148.127.245:3000");
+socket=io.connect("http://195.148.127.246:3000");
 var system_utilization1=null;
 var myrole=null;
 
@@ -19,7 +19,7 @@ var myrole=null;
 var address,
     ifaces = require('os').networkInterfaces();
 for (var dev in ifaces) {
-    if(dev !=="docker0" && dev !=="br-e249cfec586b" && dev !=="lo") {
+    if(dev === "eno1" || dev === "eth0" || dev === "ens33") {
       ifaces[dev].filter((details) => details.family === 'IPv4' && details.internal === false ? address = details.address: undefined);
     }
 

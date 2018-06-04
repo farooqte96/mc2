@@ -414,7 +414,10 @@ io.on('connection', socket => {
     var producer_name=["producer1", "producer2", "producer3"];
     data.consumer[0].host_port=ports_available[0];
     // Concatenate ccordinator arguments with port info here
-    data.consumer[0].arguments=data.consumer[0].arguments+" -p "+ports_available[0]+":"+data.consumer[0].port;
+    // 04.06 changes, we now dont need port expose info
+    // data.consumer[0].arguments=data.consumer[0].arguments+" -p "+ports_available[0]+":"+data.consumer[0].port;
+    
+
     // console.log(data.consumer[0].arguments);
     data.consumer[0].name=consumer_name[0];
     data.consumer[0].browser=false;
