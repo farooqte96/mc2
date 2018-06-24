@@ -2,28 +2,21 @@ var io=require('socket.io-client');
 var ip = require('ip');
 // import io from 'socket.io-client';
 var socket;
-socket=io.connect("http://195.148.127.246:3000");
+socket=io.connect("http://195.148.127.245:3000");
 var system_utilization1=null;
 var myrole=null;
+//var cmd=require('node-cmd');
 
 
+var address=ip.address();
 // var address,
 //     ifaces = require('os').networkInterfaces();
 // for (var dev in ifaces) {
-//     if(dev ==="eno1") {
+//     if(dev ==="enp0s25") {
 //       ifaces[dev].filter((details) => details.family === 'IPv4' && details.internal === false ? address = details.address: undefined);
 //     }
 //
 // }
-// var address=ip.address();
-var address,
-    ifaces = require('os').networkInterfaces();
-for (var dev in ifaces) {
-    if(dev === "eno1" || dev === "eth0" || dev === "ens33") {
-      ifaces[dev].filter((details) => details.family === 'IPv4' && details.internal === false ? address = details.address: undefined);
-    }
-
-}
 
 console.log(address);
 var exec=require('child_process').exec;
@@ -143,10 +136,36 @@ function consumer(network){
 
   contLoad(network);
   socket.on('mig.req@'+address, (mag)=>{
-    console.log("listening for migration");
+    var start_time=new Date();
+    console.log("Migrating: "+mag.application+ " to "+mag.destination +" at "+start_time);
     // here start consumer container and send response back to server
 
-    var command="./migrate2.sh " + mag.application +  " " + mag.image+" " + '\"'+mag.arguments+'\"' + " " + mag.destination;
+    var command="./migrate2.sh " + mag.application +  " " + mag.image+" " + '\"'+mag.arguments+'\"' + " " + mag.destination + " &" ;
+
+    // cmd.get(
+    //     command,
+    //     function(err, data, stderr){
+    //
+    //         if(data){
+    //               var end_time=new Date();
+    //               console.log("Stdout Time for : "+(end_time.getTime()-start_time.getTime() ));
+    //               // console.log(stdout);
+    //               var response={
+    //                             "From":address,
+    //                             "To":mag.destination,
+    //                             "name": mag.application,
+    //                             "image":mag.image,
+    //                             "arguments":mag.arguments,
+    //                             "bflag":mag.browser
+    //
+    //               }
+    //               // response=data.consumer_name+" with image "+data.image+" started on consumer "+address+" with parameters "+data.arguments+" ports: "+ data.port+ ":" + data.host_port
+    //               socket.emit('mig.res', response);
+    //               var end_time=new Date();
+    //               console.log("Migration Time for "+mag.application+ " : " +(end_time.getTime()-start_time.getTime() ));
+    //             }
+    //     }
+    // );
   // var command="./test.sh " +data.consumer_name+" " +'\"'+data.image+'\"' + " " + data.port+" "+data.host_port+" "+ JSON.stringify(data.env) ;
     exec(command,function(err, stdout){
         if(err){
@@ -179,6 +198,8 @@ function consumer(network){
           }
           // response=data.consumer_name+" with image "+data.image+" started on consumer "+address+" with parameters "+data.arguments+" ports: "+ data.port+ ":" + data.host_port
           socket.emit('mig.res', response);
+          var end_time=new Date();
+          console.log("Migration Time for "+mag.application+ " : " +(end_time.getTime()-start_time.getTime() ));
         }
 
       });
@@ -228,7 +249,7 @@ function consumer(network){
       // system_utilization1=system_utilization;
 
 
-        console.log(system_utilization);
+        // console.log(system_utilization);
         socket.emit('send.load', system_utilization);
 
       ////

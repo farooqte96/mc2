@@ -69,13 +69,23 @@ app.get('/', function(request,response){
       Profile.find({}, function(error, profiles){
           if (profiles) {
 
-                response.render('index',
-                  {
-                    title:'Registered Nodes',
-                    cloudlets:cloudlets,
-                    profiles:profiles
+              Service.find({},function(error, services){
 
-                  });
+                if (services) {
+
+                  response.render('index',
+                    {
+                      title:'Registered Nodes',
+                      cloudlets:cloudlets,
+                      profiles:profiles,
+                      services:services,
+
+                    });
+
+                }
+
+              });
+
 
             }
 
@@ -312,16 +322,21 @@ deploySubject
     var success=resGlobal.dapp.name+" deployed successfully. You can access it ";
   }
 
-  // save service for only consumers:
-  resGlobal.service.save(function(error, savedservice){
-    if (error){
-      console.log(error);
-    }
-    else {
-      console.log('service saved successfully');
-      // response.redirect('/');
-    }
-  });
+  // save service for all + only when there is no error:
+  if (!subjectResponse.error){
+
+    resGlobal.service.save(function(error, savedservice){
+      if (error){
+        console.log(error);
+      }
+      else {
+        console.log('service saved successfully');
+        // response.redirect('/');
+      }
+    });
+
+  }
+
   // Step 8: send the required response to form to show to the UI
   return resGlobal.response.render('deploy_post',{stdout:JSON.stringify(subjectResponse), success:success, dapp:resGlobal.dapp,time:time});
 })
@@ -369,6 +384,7 @@ app.post('/deploy', function(request, response){
   dapp.browser=true;
   var node=request.body.name;
   dapp.type=request.body.type;
+  dapp.restart=false;
 
 
   var service=new Service();
@@ -412,7 +428,7 @@ app.post('/deploy', function(request, response){
                           // console.log("Current Load: "+loads[0]);
                           start_time1=new Date();
 
-                          dapp.restart=false;
+
                           io.emit("start.req@"+ dapp.ip, dapp)
                           return deploySubject.next({request,response,dapp,service});
                           }
@@ -425,9 +441,12 @@ app.post('/deploy', function(request, response){
                       });
                     }
           else{
-            console.log("Now we are not consumer!")
+            start_time1=new Date();
+
+
+            // console.log("Now we are not consumer!")
             io.emit("start.req@"+ dapp.ip, dapp)
-            return deploySubject.next({request,response,dapp});
+            return deploySubject.next({request,response,dapp,service});
           }
 
     }
@@ -546,97 +565,114 @@ app.post('/migrate', function(request, response){
   mag.application=request.body.application;
   mag.name=request.body.application;
   mag.source=request.body.source;
-  mag.destination=request.body.destination;
+  mag.destination0=request.body.destination;
+  mag.destination=mag.destination0.split('@')[1];
   var sep=mag.source.split('@');
-  var sep1=mag.destination.split('@');
+  // var sep1=mag.destination.split('@');
   mag.ip=sep[1];
-  mag.dstip=sep1[1];
+  // mag.dstip=sep1[1];
   mag.browser=true;
 
 
+  Cloudlet.find({"role":"cloud"}, function(error,cloudlets){
+
+    Service.find({"app":mag.application}, function(error, services){
+      if(error) {
+        console.log(error);
+      }
+      else {
+              if (services.length == 1){
+
+                  mag.id=services[0]._id;
+                  mag.image=services[0].image;
+                  mag.arguments=services[0].arguments;
+                  mag.type=services[0].type;
+
+                  }
+
+                  // var success=mag.application+" migrated successfully.";
+                  // response.render('migrate_post',{stdout:stdout, success:success, mag:mag});
+
+                  // Dont check load info when destination is cloud
+                  if (mag.destination==cloudlets[0].ip) {
+
+                    var newservice={};
+                    // new name of node
+                    newservice.name=mag.destination;
+                    var id={_id:mag.id};
+                    Service.update(id, newservice, function(error){
+                      if (error){throw error}
+                      else {console.log("Service name updated!")}
+                    });
 
 
-  Service.find({"app":mag.application}, function(error, services){
-    if(error) {
-      console.log(error);
-    }
-    else {
-            if (services.length == 1){
-
-                mag.id=services[0]._id;
-                mag.image=services[0].image;
-                mag.arguments=services[0].arguments;
-                mag.type=services[0].type;
-
-                }
-
-                // var success=mag.application+" migrated successfully.";
-                // response.render('migrate_post',{stdout:stdout, success:success, mag:mag});
-
-                // NEW Experimentation
-                Load.find({"address": mag.dstip}, function(error, loads){
-                            if (loads.length ==1 && loads[0].cpu <= 80 && loads[0].gpu <= 80 && loads[0].ram <=80) {
-                            // Update service for only consumers:
-                            var newservice={};
-                            // new name of node
-                            newservice.name=mag.dstip;
-                            var id={_id:mag.id};
-                            Service.update(id, newservice, function(error){
-                              if (error){throw error}
-                              else {console.log("Service name updated!")}
-                            });
-
-                            console.log("Current Load on Destination Node: "+loads[0]);
-                            start_time1=new Date();
-                            // Migrate if stateful otherwise kill and restrat
-                                  if(mag.type==="stateless") {
-                                          io.emit("stop.req@"+mag.ip,mag.application);
-                                          mag.restart=true;
-                                          io.emit("start.req@"+mag.dstip,mag);
-                                          return redeploySubject.next({request,response,mag});
-                                    }
-                                    else {
-                                      io.emit("mig.req@"+ mag.ip, mag)
-                                      return migrateSubject.next({request,response,mag});
-                                        }
-
+                    start_time1=new Date();
+                    // Migrate if stateful otherwise kill and restrat
+                          if(mag.type==="stateless") {
+                                  io.emit("stop.req@"+mag.ip,mag.application);
+                                  mag.restart=true;
+                                  io.emit("start.req@"+mag.destination,mag);
+                                  return redeploySubject.next({request,response,mag});
                             }
                             else {
-
-                              var sorry="Destination Node "+mag.dstip+ " is Overloaded! \n Current load: cpu: "+loads[0].cpu+" gpu: "+loads[0].gpu+" ram: "+loads[0].ram;
-                              // Step 8: send the required response to form to show to the UI
-                              response.render('migrate_post',{success:sorry});
-                              }
-                        });
-
-                // io.emit("mig.req@"+ mag.ip, mag)
-                //
-                // // Step 3: emit to subject required parameters
-                // return migrateSubject.next({request,response,mag});
+                              io.emit("mig.req@"+ mag.ip, mag)
+                              return migrateSubject.next({request,response,mag});
+                                }
 
 
+                  }
+                  else {
 
-      // var exec=require('child_process').exec;
+                    Load.find({"address": mag.destination}, function(error, loads){
+                                if (loads.length ==1 && loads[0].cpu <= 80 && loads[0].gpu <= 80 && loads[0].ram <=80) {
+                                // Update service for only consumers:
+                                var newservice={};
+                                // new name of node
+                                newservice.name=mag.destination;
+                                var id={_id:mag.id};
+                                Service.update(id, newservice, function(error){
+                                  if (error){throw error}
+                                  else {console.log("Service name updated!")}
+                                });
 
-      // var command="./pre_migrate.sh " + mag.source + " " + mag.application + " " + mag.image+" " + '\"'+mag.arguments+'\"' + " " + mag.destination;
-      // exec(command,function(err, stdout){
-      //     if(err){
-      //       throw err;
-      //     }
-      //     console.log(stdout);
-      //     var success=mag.application+" migrated successfully.";
-      //     response.render('migrate_post',{stdout:stdout, success:success, mag:mag});
-      //     var newservice={};
-      //     // new name of node
-      //     newservice.name=mag.destination;
-      //     var id={_id:mag.id};
-      //     Service.update(id, newservice, function(error){
-      //       if (error){throw error}
-      //       else {console.log("Service name updated!")}
-      //     });
-      //   });
-    }
+                                console.log("Current Load on Destination Node: "+loads[0]);
+                                start_time1=new Date();
+                                // Migrate if stateful otherwise kill and restrat
+                                      if(mag.type==="stateless") {
+                                              io.emit("stop.req@"+mag.ip,mag.application);
+                                              mag.restart=true;
+                                              io.emit("start.req@"+mag.destination,mag);
+                                              return redeploySubject.next({request,response,mag});
+                                        }
+                                        else {
+                                          io.emit("mig.req@"+ mag.ip, mag)
+                                          return migrateSubject.next({request,response,mag});
+                                            }
+
+                                }
+                                else {
+
+                                  var sorry="Destination Node "+mag.destination+ " is Overloaded! \n Current load: cpu: "+loads[0].cpu+" gpu: "+loads[0].gpu+" ram: "+loads[0].ram;
+                                  // Step 8: send the required response to form to show to the UI
+                                  response.render('migrate_post',{success:sorry});
+                                  }
+                            });
+                  }
+                  // NEW Experimentation
+
+
+                  // io.emit("mig.req@"+ mag.ip, mag)
+                  //
+                  // // Step 3: emit to subject required parameters
+                  // return migrateSubject.next({request,response,mag});
+
+
+      }
+    });
+
   });
+
+
 
 
 
@@ -674,6 +710,8 @@ app.get('/profile/:id', function(request, response){
     });
   });
 });
+
+
 
 //Load Edit form
 app.get('/profile/edit/:id', function(request, response){
@@ -736,6 +774,38 @@ app.delete('/profile/:id', function(request, response){
     response.send('Profile successfully removed');
 
   });
+});
+
+//Get single service
+app.get('/service/:id', function(request, response){
+  Service.findById(request.params.id, function(error, service){
+    response.render('service',{
+      service:service
+    });
+  });
+});
+
+
+//delete service from database
+app.delete('/service/:id', function(request, response){
+  var id={_id:request.params.id};
+  Service.find({"_id":id}, function(error, services){
+    var mag2={};
+    mag2.ip=services[0].name;
+    mag2.application=services[0].app;
+    io.emit("stop.req@"+mag2.ip,mag2.application);
+    Service.remove(id, function(error){
+      if (error){console.log(error);}
+
+
+
+      response.send('Service successfully removed');
+
+    });
+
+
+  });
+
 });
 
 // var node1_system={"cpu":"100%", "gpu":"20%", "memory":"40%"};

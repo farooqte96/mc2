@@ -34,8 +34,8 @@ migrate() {
 
     # check ssh connectivity
     # [ ! "$(ssh -q ${destination_host} echo 'ok')" == "ok" ] && { echo "Unable to SSH to ${destination_host}"; exit 1; } &
-    # rsync --delete-after -avzh /tmp/${checkpoint_tar} ${destination_host}:/tmp/
-    scp /tmp/${checkpoint_tar} ${destination_host}:/tmp/
+    rsync --delete-after -avzh /tmp/${checkpoint_tar} ${destination_host}:/tmp/
+    # scp /tmp/${checkpoint_tar} ${destination_host}:/tmp/
 
     # Attempt to copy over
 
@@ -49,17 +49,18 @@ restore(){
   # Now on destination host, we create container with same name and Image
   # echo "Starting container [${container_name}] on ${destination_host} from checkpoint [${checkpoint_name}]" &
   remote_container_id=$(ssh ${destination_host} "docker create --name ${container_name} ${ARGUMENTS} ${container_image}")
-  # remote_container_id=$(docker create --name ${container_name} ${ARGUMENTS} ${container_image});
+  #remote_container_id=$(docker create --name ${container_name} ${ARGUMENTS} ${container_image});
   # wait
   ssh ${destination_host} "
-
+      remote_container_id=$(docker create --name ${container_name} ${ARGUMENTS} ${container_image});
       sudo tar -zxf /tmp/${checkpoint_tar} -C /var/lib/docker/containers/${remote_container_id}/checkpoints/;
-      docker start --checkpoint ${checkpoint_name} ${container_name}
+
+      if !(docker start --checkpoint ${checkpoint_name} ${container_name}); then
+        docker start ${container_name}
+
+      fi
       docker checkpoint rm ${container_name} ${checkpoint_name} &
       sudo rm /tmp/${checkpoint_tar};
-
-
-
   "
   # ssh -t ${destination_host} "sudo tar -zxf /tmp/${checkpoint_tar} -C /var/lib/docker/containers/${remote_container_id}/checkpoints/"
   #
@@ -81,7 +82,7 @@ kill_source() {
     # ssh ${migration_host} "docker rm -fv ${container_name}"
     # exit 1
     ########## Also delete the .tgz data at /tmp
-    sudo rm /tmp/${checkpoint_tar}
+    sudo rm /tmp/${checkpoint_tar} </dev/null
 }
 
 

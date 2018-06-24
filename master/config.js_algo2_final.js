@@ -3,8 +3,8 @@ var Load=require('./models/loads');
 var Service=require('./models/services');
 var Green=require('./models/green');
 var Red=require('./models/red');
-var Profile=require('./models/profile');
 var Sum=require('sum-of-two-numbers');
+var Profile=require('./models/profile');
 var start_time=null;
 var end_time=null;
 const{Observable,BehaviorSubject,Subject } =  require('rxjs');
@@ -44,12 +44,12 @@ function currentStats(){
                                 if (error){throw error}
                                 else  {
                                           // loads.length ==1 && loads[0].cpu <= 10 && loads[0].gpu <= 10 && loads[0].ram <=10
-                                        if (loads.length ==1 && loads[0].cpu <= 50 ) {
+                                        if (loads.length ==1 && loads[0].cpu <= 40 ) {
                                                           // Needs to check if that load already saved in red
                                                           Red.find({"address":loads[0].address}, function(error, reds){
                                                             if (reds.length >=1) {
                                                                                 Red.remove({"address":loads[0].address}, function(error, removed){
-                                                                                  if (removed) {console.log ("Previous Red: "+loads[0].address+" value removed!")}
+                                                                                  if (removed) {console.log ("Previous Red value Dumped!")}
                                                                                 });
                                                                                 }
                                                           });
@@ -67,7 +67,7 @@ function currentStats(){
                                                                                 var id={_id:green_id};
                                                                                 Green.update(id, newgreen, function(error){
                                                                                     if (error){throw error}
-                                                                                    // else {console.log("Green Node info updated");}
+                                                                                    else {console.log("Green info updated")}
                                                                                     });
 
                                                                                 }
@@ -92,19 +92,19 @@ function currentStats(){
                                                                                               }
                                                                                               else {
 
-                                                                                              console.log("Green Node "+green.address+" added successfully");
+                                                                                                console.log("Green list saved successfully");
                                                                                                     }
                                                                                                   });
                                                                                 }
                                                                               });
                                                                           }
 
-                                        else if (loads.length ==1 && loads[0].cpu >= 50){
+                                        else if (loads.length ==1 && loads[0].cpu >= 40){
                                                             // // Needs to check if that load already saved in Green
                                                             Green.find({"address":loads[0].address}, function(error, greens){
                                                               if (greens.length >=1) {
                                                                                   Green.remove({"address":loads[0].address}, function(error, removed){
-                                                                                    if (removed) {console.log ("Previous Green: "+loads[0].address+" value removed!")}
+                                                                                    if (removed) {console.log ("Previous Green value Dumped!")}
                                                                                   });
                                                                                   }
                                                             });
@@ -122,7 +122,7 @@ function currentStats(){
                                                                                   var id={_id:red_id};
                                                                                   Red.update(id, newred, function(error){
                                                                                       if (error){throw error}
-                                                                                      // else {  console.log("Red Node info updated");}
+                                                                                      else {console.log("Red info updated")}
                                                                                       });
 
                                                                                   }
@@ -147,7 +147,7 @@ function currentStats(){
                                                                                                 }
                                                                                                 else {
 
-                                                                                                  console.log("Red Node "+red.address+"  added successfully");
+                                                                                                  console.log("Red list saved successfully");
                                                                                                       }
                                                                                                     });
                                                                                   }
@@ -170,38 +170,35 @@ function currentStats(){
 
 
   redcheck+=1;
-  setTimeout(currentStats, 6000);
+  setTimeout(currentStats, 7000);
 }
 
 
-
-
-
 currentStats();
+// if(x_io){rescue()};
+
+
 if(x_io){rescue_promise()};
 
 async function rescue_promise(){
-  // console.log("ok we got io");
+  console.log("ok we got io");
   let reds  = await Red.find({}).exec();
   let cloudlets = await Cloudlet.find({"role":"cloud"}).exec();
 
   if(reds.length>=1){
     for (var i=0; i<reds.length;i++){
-      console.log("Alert! Red Node "+reds[i].address+" found with info "+"["+"cpu: "+reds[i].cpu+","+"gpu: "+reds[i].gpu+","+"ram: "+reds[i].ram+"]")
-      console.log("Total Red Nodes:"+reds.length);
+      console.log("Alert! Red Node Found with address: "+reds[i].address)
+      console.log(reds.length)
       var redNetwork=reds[i].network
       var redAddress=reds[i].address
       let services = await Service.find({"name":reds[i].address}).exec();
       if (services.length>=1) {
         // these services need to be migrated
         // but on which destination???
-        var offset=0;
-        var offset2=0;
-        var offset3=0;
-        let greens = await Green.find({"network":redNetwork}).sort({"cpu":1}).exec();
-        let dgreens = await Green.find({}).sort({"cpu":1}).exec();
-        for (var j=0; j<services.length;j++){
 
+        let greens = await Green.find().sort({"cpu":-1}).exec();
+        for (var j=0; j<services.length;j++){
+          var abort = false;
 
             console.log(services[j].app+" needs to be migrated");
              var mag={};
@@ -220,20 +217,20 @@ async function rescue_promise(){
              if (profiles.length==1) {
                console.log("Application Profile Found");
                if (greens.length>=1) {
+                 // console.log("Available Greens"+ greens);
+                 for (var k=0; k<greens.length && !abort;k++){
 
-
-                   if (Sum(Sum(profiles[0].cpu, greens[0].cpu),offset) <= 50 && redAddress!=greens[0].address) {
-                     console.log("Offset: "+offset);
-                     console.log("Profile.cpu: "+profiles[0].cpu);
-                     console.log("Greens[0].cpu: "+greens[0].cpu);
-                     console.log("Sum < 50: "+Sum(Sum(profiles[0].cpu, greens[0].cpu),offset));
-                     offset=Sum(offset,profiles[0].cpu);
-
-
-                     console.log("Found Green Node "+greens[0].address+" from same network");
+                   if (Sum(profiles[0].cpu, greens[k].cpu) <= 50 && redAddress!=greens[k].address) {
+                     // update cpu value after profile matched
                      console.log("Application Profile Matched");
-                     mag.destination=greens[0].address;
-                     console.log("Migrating: "+mag.name+ "to "+mag.destination+"-->["+"cpu: "+greens[0].cpu+"]");
+
+                     mag.destination=greens[k].address;
+
+                     console.log("Migrating: "+mag.name+ "to "+mag.destination+"-->["+"cpu: "+greens[k].cpu+"]");
+                     console.log("Profile.cpu: "+profiles[0].cpu);
+                     console.log("Greens[k].cpu: "+greens[k].cpu);
+                     greens[k].cpu=Sum(greens[k].cpu,profiles[0].cpu);
+                     console.log("Sum < 50: "+greens[k].cpu);
 
                      start_time=new Date();
                      console.log("Migration start time for "+mag.application+" :"+start_time);
@@ -256,144 +253,56 @@ async function rescue_promise(){
                      newservice.name=mag.destination;
                      var id={_id:mag.id};
                      let updatedService = await Service.update(id, newservice).exec();
-
+                     abort = true;
                    }
-                   else if (dgreens.length>=1) {
-
-                          if (Sum(Sum(profiles[0].cpu, dgreens[0].cpu),offset2) <= 50 && redAddress!=dgreens[0].address) {
-
-                            console.log("Application Profile Not Matched with same Network Green Nodes");
-                            console.log("Offset2: "+offset2);
-                            console.log("Profile[0].cpu: "+profiles[0].cpu);
-                            console.log("Greens[0].cpu: "+dgreens[0].cpu);
-                            console.log("Sum < 50: "+Sum(Sum(profiles[0].cpu, dgreens[0].cpu),offset2));
-                            offset2=Sum(offset2,profiles[0].cpu);
+                else if (k==greens.length-1) {
+                  console.log("Application Profile Not Matched");
 
 
-                            console.log("Found Green Node "+dgreens[0].address+" from different network");
-                            console.log("Application Profile Matched");
-                            mag.destination=dgreens[0].address;
-                            console.log("Migrating: "+mag.name+ "to "+mag.destination);
+                  if (cloudlets.length>=1){
 
-                            start_time=new Date();
-                            console.log("Migration start time for "+mag.application+" :"+start_time);
-                            // migrate if stateful otherwise restart on destination and kill on source.
-                                  if(mag.type==="stateless") {
+                    mag.destination=cloudlets[0].ip;
+                    console.log("Migrating:"+mag.name+" to cloud device "+cloudlets[0].ip);
+                    
+                    console.log("Migration start time for "+mag.application+" :"+start_time);
 
-                                    x_io.emit("start.req@"+mag.destination,mag);
-                                    x_io.emit("stop.req@"+redAddress,mag.name);
-                                  }
-                                  else {
+                    start_time=new Date();
+                    // migrate if stateful otherwise restart on destination and kill on source.
+                          if(mag.type==="stateless") {
 
-
-                                      x_io.emit("mig.req@"+redAddress,mag)
-
-                                  }
-
-                            // Now update service db name for migrated service
-                            var newservice={};
-                            // new name of node
-                            newservice.name=mag.destination;
-                            var id={_id:mag.id};
-                            let updatedService = await Service.update(id, newservice).exec();
-
+                            x_io.emit("start.req@"+mag.destination,mag);
+                            x_io.emit("stop.req@"+redAddress,mag.name);
                           }
-
                           else {
-                                      console.log("Application Profile Not matched with Edge Node");
-                                      if (cloudlets.length>=1){
 
-
-                                        mag.destination=cloudlets[0].ip;
-                                        console.log("Migrating:"+mag.name+ "to "+mag.destination);
-
-                                        console.log("Migration start time for "+mag.application+" :"+start_time);
-                                        start_time=new Date();
-                                        // migrate if stateful otherwise restart on destination and kill on source.
-                                              if(mag.type==="stateless") {
-
-                                                x_io.emit("start.req@"+mag.destination,mag);
-                                                x_io.emit("stop.req@"+redAddress,mag.name);
-                                              }
-                                              else {
-
-                                                x_io.emit("mig.req@"+redAddress,mag);
-                                              }
-
-                                        // Now update service db name for migrated service
-                                        var newservice={};
-                                        // new name of node
-                                        newservice.name=mag.destination;
-                                        var id={_id:mag.id};
-                                        let updatedService = await Service.update(id, newservice).exec();
-
-                                        }
-
+                            x_io.emit("mig.req@"+redAddress,mag);
                           }
 
+                    // Now update service db name for migrated service
+                    var newservice={};
+                    // new name of node
+                    newservice.name=mag.destination;
+                    var id={_id:mag.id};
+                    let updatedService = await Service.update(id, newservice).exec();
 
+                    }
 
+                 }
 
-                   }
-
-
-
-
-
+             }
            }
-          else if (dgreens.length>=1) {
-            console.log("No Green Found from same Network");
-            console.log("Found Green Node "+dgreens[0].address+" from different network");
-            if (Sum(Sum(profiles[0].cpu, dgreens[0].cpu),offset3) <= 50 && redAddress!=dgreens[0].address) {
+               else {
 
-              console.log("Offset: "+offset3);
-              console.log("Profile[0].cpu: "+profiles[0].cpu);
-              console.log("Greens[0].cpu: "+dgreens[0].cpu);
-              console.log("Sum < 50: "+Sum(Sum(profiles[0].cpu, dgreens[0].cpu),offset3));
-              offset3=Sum(offset3,profiles[0].cpu);
+                      console.log("All Edge Nodes Busy! Migrate to cloud device!");
 
 
 
-              console.log("Application Profile Matched");
-              mag.destination=dgreens[0].address;
-              console.log("Migrating:"+mag.name+ "to "+mag.destination);
+                        if (cloudlets.length>=1) {
 
-              start_time=new Date();
-              console.log("Migration start time for "+mag.application+" :"+start_time);
-              // migrate if stateful otherwise restart on destination and kill on source.
-                    if(mag.type==="stateless") {
-
-                      x_io.emit("start.req@"+mag.destination,mag);
-                      x_io.emit("stop.req@"+redAddress,mag.name);
-                    }
-                    else {
-
-
-                        x_io.emit("mig.req@"+redAddress,mag)
-
-                    }
-
-              // Now update service db name for migrated service
-              var newservice={};
-              // new name of node
-              newservice.name=mag.destination;
-              var id={_id:mag.id};
-              let updatedService = await Service.update(id, newservice).exec();
-
-            }
-
-            else {
-                        console.log("Application Profile Not matched with  Edge Nodes");
-                        if (cloudlets.length>=1){
-
-
+                          console.log("Cloud Device:"+cloudlets[0].ip);
+                          console.log("Migrating:"+mag.name);
                           mag.destination=cloudlets[0].ip;
-                          console.log("Migrating to cloud");
-                          console.log("Migrating:"+mag.name+ "to "+mag.destination);
-
-
                           start_time=new Date();
-                          console.log("Migration start time for "+mag.application+" :"+start_time);
                           // migrate if stateful otherwise restart on destination and kill on source.
                                 if(mag.type==="stateless") {
 
@@ -412,56 +321,17 @@ async function rescue_promise(){
                           var id={_id:mag.id};
                           let updatedService = await Service.update(id, newservice).exec();
 
-                          }
-
-            }
-
-
-
-
-          }
-
-          else {
-                        console.log("All Edge Nodes Busy! Migrating to cloud");
-                        if (cloudlets.length>=1){
-
-
-                          mag.destination=cloudlets[0].ip;
-                          console.log("Migrating:"+mag.name+ "to "+mag.destination);
-
-
-                          start_time=new Date();
-                          console.log("Migration start time for "+mag.application+" :"+start_time);
-                          // migrate if stateful otherwise restart on destination and kill on source.
-                                if(mag.type==="stateless") {
-
-                                  x_io.emit("start.req@"+mag.destination,mag);
-                                  x_io.emit("stop.req@"+redAddress,mag.name);
-                                }
-                                else {
-
-                                  x_io.emit("mig.req@"+redAddress,mag);
-                                }
-
-                          // Now update service db name for migrated service
-                          var newservice={};
-                          // new name of node
-                          newservice.name=mag.destination;
-                          var id={_id:mag.id};
-                          let updatedService = await Service.update(id, newservice).exec();
-
-                          }
-          }
-
+                }
+                else {console.log("No cloud device Found!")}
+         }
        }
       }
      }
    }
  }
-// console.log("Rescue function ended!");
-setTimeout(rescue_promise, 5000);
+console.log("function ended");
+setTimeout(rescue_promise, 4000);
 }
-
 
 
 
@@ -475,6 +345,30 @@ module.exports=function(io){
   module.exports.subject2 = subject2;
 io.on('connection', socket => {
   console.log('A socket is opened by client: '+socket.handshake.address.split("ff:")[1]);
+
+
+  // console.log(socket);
+  // socket.emit('cpu_stats');
+  // module.exports.mySocket = socket;
+
+  // socket.on("start.response", (result)=>{
+  //   console.log("Hi we got response!");
+  //   var success=result.name+" deployed successfully. You can access it ";
+  //   // console.log(result);
+  //   subject.next(result);
+  // //  response.render('deploy_post',{success:success, dapp:dapp});
+  // });
+  // socket.on('register', (id)=>{
+  //   socket.join(id);
+  // })
+
+  // socket.on('system_utilization', (system_utilization) => {
+  //   // console.log(system_utilization);
+  //   // system_utilization=JSON.stringify(system_utilization);
+  //   io.emit('sendtobrowser', system_utilization);
+  //   setTimeout(()=> socket.emit('cpu_stats'),2000);
+  //
+  //   });
 
 
 
@@ -529,7 +423,9 @@ io.on('connection', socket => {
     var producer_name=["producer1", "producer2", "producer3"];
     data.consumer[0].host_port=ports_available[0];
     // Concatenate ccordinator arguments with port info here
-    data.consumer[0].arguments=data.consumer[0].arguments+" -p "+ports_available[0]+":"+data.consumer[0].port;
+    // 04.06 changes, we now dont need port expose info
+    // data.consumer[0].arguments=data.consumer[0].arguments+" -p "+ports_available[0]+":"+data.consumer[0].port;
+
     // console.log(data.consumer[0].arguments);
     data.consumer[0].name=consumer_name[0];
     data.consumer[0].browser=false;
@@ -562,7 +458,7 @@ io.on('connection', socket => {
             console.log(error);
           }
           else {
-            console.log("service deployed successfully");
+            console.log("service saved successfully");
             // response.redirect('/');
           }
         });
@@ -590,7 +486,7 @@ io.on('connection', socket => {
   // GET CONSUMER RESPONSES and send it to coordinator
   socket.on('start.res', (res)=>{
     console.log(res);
-    // console.log('from start.res');
+    console.log('from start.res');
     if(res.bflag==true){
       end_time=new Date();
                   if (res.restart==true) {
@@ -685,15 +581,15 @@ io.on('connection', socket => {
             const array1 = [load.cpu,load.gpu, load.ram];
 
             load.total=array1.reduce(reducer);
-            // console.log("Total value:"+load.total)
+            console.log("Total value:"+load.total)
             load.save(function(error, savedservice){
               if (error){
                 console.log(error);
               }
-          //     else {
-          //       console.log("Load Info for "+system_utilization.address+" saved successfully");
-          // // response.redirect('/');
-          //           }
+              else {
+                console.log("Load Info saved successfully");
+          // response.redirect('/');
+                    }
                   });
     }
 
@@ -723,7 +619,7 @@ io.on('connection', socket => {
                     var id={_id:load_id};
                     Load.update(id, newload, function(error){
                       if (error){throw error}
-                      // else {console.log("Load info updated for "+system_utilization.address)}
+                      else {console.log("Load info updated for "+system_utilization.address)}
                     });
 
 
@@ -756,7 +652,12 @@ Cloudlet.find({}, function(error, cloudlets){
   });
 
 
-
+  // function sendata (ip,app,image,arguments){
+  //   this.ip=ip;
+  //   this.app=app;
+  //   this.image=image;
+  //   this.arguments =arguments;
+  // }
 
 
 

@@ -19,6 +19,14 @@ block content
 
   br
 
+  h2 Deployed Apps
+  br
+  ul.list-group
+    each service, i in services
+      li.list-group-item
+        a(href="/service/"+service._id)=service.app
+
+  br
   h2 Events:
   p#attach_req
   p#attach_rep

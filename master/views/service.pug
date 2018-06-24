@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= service.app
+  p App Image:  #{service.image}
+  p Arguments: #{service.arguments}
+  p Type: #{service.type}
+  p Source Node: #{service.name}
+
+  div.btn-group
+
+   a.btn.btn-danger.delete-service(href='#', data-id=service._id) Delete
+   
+   br

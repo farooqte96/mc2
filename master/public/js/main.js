@@ -46,3 +46,26 @@ $(document).ready(function(){
     });
   });
 });
+
+$(document).ready(function(){
+  //grab delete cloudlet Class
+  $('.delete-service').on('click', function(e){
+      //e is event variable
+    //to grab data attribute i.e data-id we use e.target
+    $target=$(e.target);
+    const id=$target.attr('data-id');
+    //make ajax request
+    $.ajax({
+      type:'DELETE',
+      url:'/service/'+id,
+      success: function(response){
+        alert('Deleting Service');
+        //redirect it to main page using window.location attribute
+        window.location.href='/';
+      },
+      error: function(error){
+        console.log(error);
+      }
+    });
+  });
+});
