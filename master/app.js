@@ -316,10 +316,10 @@ deploySubject
   end_time1=new Date();
   var time= end_time1.getTime()-start_time1.getTime();
   if (subjectResponse.error){
-    var success=resGlobal.dapp.name+" deployment failed due to error "+JSON.stringify(subjectResponse.error);
+    var result=resGlobal.dapp.name+" deployment failed due to error "+JSON.stringify(subjectResponse.error);
   }
   else {
-    var success=resGlobal.dapp.name+" deployed successfully. You can access it ";
+    var result=resGlobal.dapp.name+" deployed successfully.";
   }
 
   // save service for all + only when there is no error:
@@ -338,7 +338,7 @@ deploySubject
   }
 
   // Step 8: send the required response to form to show to the UI
-  return resGlobal.response.render('deploy_post',{stdout:JSON.stringify(subjectResponse), success:success, dapp:resGlobal.dapp,time:time});
+  return resGlobal.response.render('deploy_post',{stdout:JSON.stringify(subjectResponse), result:result, dapp:resGlobal.dapp,time:time});
 })
 
 //migrateSubject HERE

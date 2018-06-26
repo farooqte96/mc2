@@ -5,7 +5,7 @@ var socket;
 socket=io.connect("http://195.148.127.245:3000");
 var system_utilization1=null;
 var myrole=null;
-//var cmd=require('node-cmd');
+var cmd=require('node-cmd');
 
 
 var address=ip.address();
@@ -18,11 +18,11 @@ var address=ip.address();
 //
 // }
 
-console.log(address);
+console.log("Local Host :"+address);
 var exec=require('child_process').exec;
 
 socket.on("set.role@"+address, (data)=>{
-  console.log("I am"+data.role);
+  console.log("Role defined by server: "+data.role);
   if (data.role==="consumer") {
     consumer(data.network);
   }
@@ -94,7 +94,7 @@ socket.on("set.role@"+address, (data)=>{
 
   // STOP Containers here
   socket.on('stop.req@'+address, (name)=>{
-    console.log("listening on consumer");
+    // console.log("listening on consumer");
     // here start consumer container and send response back to server
 
     var command="./stop.sh " + name  ;
@@ -136,11 +136,11 @@ function consumer(network){
 
   contLoad(network);
   socket.on('mig.req@'+address, (mag)=>{
-    var start_time=new Date();
-    console.log("Migrating: "+mag.application+ " to "+mag.destination +" at "+start_time);
+    // var start_time=new Date();
+    // console.log("Migrating: "+mag.application+ " to "+mag.destination +" at "+start_time);
     // here start consumer container and send response back to server
 
-    var command="./migrate2.sh " + mag.application +  " " + mag.image+" " + '\"'+mag.arguments+'\"' + " " + mag.destination + " &" ;
+    var command="./migrate2.sh " + mag.application +  " " + mag.image+" " + '\"'+mag.arguments+'\"' + " " + mag.destination + " "+ "&" + " "+ "wait" + " "+"&"+" "  ;
 
     // cmd.get(
     //     command,
@@ -198,8 +198,8 @@ function consumer(network){
           }
           // response=data.consumer_name+" with image "+data.image+" started on consumer "+address+" with parameters "+data.arguments+" ports: "+ data.port+ ":" + data.host_port
           socket.emit('mig.res', response);
-          var end_time=new Date();
-          console.log("Migration Time for "+mag.application+ " : " +(end_time.getTime()-start_time.getTime() ));
+          // var end_time=new Date();
+          // console.log("Migration Time for "+mag.application+ " : " +(end_time.getTime()-start_time.getTime() ));
         }
 
       });

@@ -16,6 +16,13 @@ block content
       textarea.form-control(name='ssh_key')
     #form-group
       label Role:
-      input.form-control(name='role', type='text')
+      select.form-control(name='role').selectpicker.show-tick
+
+        option(selected='') Choose...
+        option(value='consumer') consumer
+        option(value='producer') producer
+        option(value='cloud') cloud
+
+
       br
     input.btn.btn-primary(type='submit', value='Submit')
