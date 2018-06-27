@@ -25,4 +25,5 @@ In this project, we control any process execution and monitoring of edge nodes t
 * In server directory, by default service migration is handled by algorithm1 (containing into preference of edge node from same network). However, to test scenarios for economical migration, algorithm2 configuration file is also made avilable in master files.
 
 
-<video src="https://github.com/johnson-li/MEC/blob/master/final_joined.mp4" width="320" height="200" controls preload></video>
+### A video tour on basic CRIU features
+[![CRIU introduction](https://asciinema.org/a/7fnt2prsumvxiwf3ng61fgct3.png)](https://asciinema.org/a/7fnt2prsumvxiwf3ng61fgct3)
