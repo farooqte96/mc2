@@ -1,0 +1,49 @@
+Host 195.148.127.246
+    HostName 195.148.127.246
+    User tufailm1
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 195.148.125.212
+    HostName 195.148.125.212
+    User tufailm1
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 195.148.125.213
+    HostName 195.148.125.213
+    User pi
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 195.148.125.214
+    HostName 195.148.125.214
+    User pi
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 195.148.127.46
+    HostName 195.148.127.46
+    User vrone
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 35.185.23.93
+    HostName 35.185.23.93
+    User farooqte96_gmail_com
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 51.137.107.26
+    HostName 51.137.107.26
+    User mec
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+Host 51.145.128.159
+    HostName 51.145.128.159
+    User mec2
+    IdentitiesOnly yes
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+
+Host github.com
+    IdentityFile /home/tufailm1/.ssh/id_rsa
+
+Host *
+    ControlPath ~/.ssh/controlmasters/%r@%h:%p
+    ControlMaster auto
+    ControlPersist 30m
+
