@@ -16,6 +16,10 @@ In this project, we control any process execution and monitoring of edge nodes t
 * Migrate containers from source node to destination node and see the migration time as response.
 * Monitor all nodes  by executing cadvisor container on each node. We use cadvisor to show the all deployed containers on those nodes and system utilization information such as CPU, Memory etc. However we have a separate script on each edge node to send system utilization information (cpu, gpu and ram information ) every 5 sec to server and take decisions based on that information. 
 
+### A video tour on basic CRIU features
+[![MEC Demo Video](https://asciinema.org/a/7fnt2prsumvxiwf3ng61fgct3.png)](https://drive.google.com/open?id=1cXv2WfkP-7B0lOmAcZ1Gazqv5e_l8cU2)
+
+
 # System Installation and Usage:
 * Git pull the repository conatining master and consumer directories.
 * Copy master directory to node which has to act as master and consumer directory to node which has to server as edge node.
@@ -25,5 +29,3 @@ In this project, we control any process execution and monitoring of edge nodes t
 * In server directory, by default service migration is handled by algorithm1 (containing into preference of edge node from same network). However, to test scenarios for economical migration, algorithm2 configuration file is also made avilable in master files.
 
 
-### A video tour on basic CRIU features
-[![CRIU introduction](https://asciinema.org/a/7fnt2prsumvxiwf3ng61fgct3.png)](https://asciinema.org/a/7fnt2prsumvxiwf3ng61fgct3)
