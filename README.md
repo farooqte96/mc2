@@ -24,4 +24,5 @@ In this project, we control any process execution and monitoring of edge nodes t
 * Now you should see a server running on port 3000 of your device. After configuring ssh-access from server to each edge node and among all edge nodes, we are ready to register edge nodes, deploy some services on them and can also monitor their state in real time.
 * In server directory, by default service migration is handled by algorithm1 (containing into preference of edge node from same network). However, to test scenarios for economical migration, algorithm2 configuration file is also made avilable in master files.
 
-http://img.youtube.com/vi/{video-id}/0.jpg
+
+<video src="https://github.com/johnson-li/MEC/blob/master/final_joined.mp4" width="320" height="200" controls preload></video>
