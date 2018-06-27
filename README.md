@@ -16,7 +16,7 @@ In this project, we control any process execution and monitoring of edge nodes t
 * Migrate containers from source node to destination node and see the migration time as response.
 * Monitor all nodes  by executing cadvisor container on each node. We use cadvisor to show the all deployed containers on those nodes and system utilization information such as CPU, Memory etc. However we have a separate script on each edge node to send system utilization information (cpu, gpu and ram information ) every 5 sec to server and take decisions based on that information. 
 
-### A video tour on basic CRIU features
+### A video tour on basic features
 [![MEC Demo Video](http://www.systemsolutionsdevelopment.com/wp-content/uploads/2017/07/Product-DemoVideo-1.jpg)](https://vimeo.com/277253909)
 
 
