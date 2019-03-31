@@ -19,6 +19,9 @@ In this project, we control any process execution and monitoring of edge nodes t
 ### A video tour on basic features
 [![MEC Demo Video](http://www.systemsolutionsdevelopment.com/wp-content/uploads/2017/07/Product-DemoVideo-1.jpg)](https://vimeo.com/277253909)
 
+#Thesis Link
+https://aaltodoc.aalto.fi/bitstream/handle/123456789/34370/master_Tufail_Muhammad_2018.pdf?sequence=1&isAllowed=y
+
 
 # System Installation and Usage:
 * Git pull the repository conatining master and consumer directories.
